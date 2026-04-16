@@ -43,6 +43,54 @@ fileInput.addEventListener('change', (e) => {
 });
 
 /**
+ * Extract job title and location from natural language search prompt
+ */
+function extractSearchParams(prompt) {
+    const result = { jobTitle: '', location: '' };
+
+    // Try to extract location (look for common patterns)
+    const locationPatterns = [
+        /(?:in|at|near|around)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*(?:,?\s*[A-Z]{2})?)/gi,
+        /(remote|hybrid|on-site)/gi,
+        /\b([A-Z][a-z]+,\s*[A-Z]{2})\b/gi,
+    ];
+
+    for (const pattern of locationPatterns) {
+        const match = prompt.match(pattern);
+        if (match) {
+            result.location = match[0];
+            break;
+        }
+    }
+
+    // Try to extract job title (look for common job keywords)
+    const jobKeywords = [
+        'engineer', 'developer', 'analyst', 'scientist', 'manager', 'architect',
+        'designer', 'product', 'marketing', 'sales', 'operations', 'consultant'
+    ];
+
+    const promptLower = prompt.toLowerCase();
+    for (const keyword of jobKeywords) {
+        if (promptLower.includes(keyword)) {
+            // Try to extract the full job title around this keyword
+            const pattern = new RegExp(`([a-z\\s]+${keyword})`, 'i');
+            const match = prompt.match(pattern);
+            if (match) {
+                result.jobTitle = match[1].trim();
+                break;
+            }
+        }
+    }
+
+    // If we couldn't extract with patterns, use the whole prompt as job title
+    if (!result.jobTitle && prompt.length < 100) {
+        result.jobTitle = prompt;
+    }
+
+    return result;
+}
+
+/**
  * Handle file selection
  */
 function handleFileSelect(file) {
@@ -82,10 +130,19 @@ async function startSearch() {
     const formData = new FormData();
     formData.append('resume', selectedFile);
 
-    // Add optional parameters
-    const jobTitle = document.getElementById('jobTitle').value.trim();
-    const location = document.getElementById('location').value.trim();
+    // Get search parameters
+    const searchPrompt = document.getElementById('searchPrompt').value.trim();
+    let jobTitle = document.getElementById('jobTitle').value.trim();
+    let location = document.getElementById('location').value.trim();
 
+    // If search prompt provided, extract job title and location from it
+    if (searchPrompt) {
+        const extracted = extractSearchParams(searchPrompt);
+        if (!jobTitle) jobTitle = extracted.jobTitle;
+        if (!location) location = extracted.location;
+    }
+
+    // Add parameters to request
     if (jobTitle) formData.append('job_title', jobTitle);
     if (location) formData.append('location', location);
 
@@ -314,6 +371,7 @@ function resetSearch() {
     fileInput.value = '';
     fileName.classList.remove('show');
     fileName.textContent = '';
+    document.getElementById('searchPrompt').value = '';
     document.getElementById('jobTitle').value = '';
     document.getElementById('location').value = '';
     searchBtn.disabled = true;

@@ -209,6 +209,64 @@ body {
     box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.1);
 }
 
+/* Search Prompt */
+.search-prompt {
+    margin-bottom: 1.5rem;
+}
+
+.search-prompt label {
+    display: block;
+    color: var(--text-primary);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+.textarea-field {
+    resize: vertical;
+    font-family: inherit;
+    padding: 0.75rem;
+    line-height: 1.5;
+}
+
+.textarea-field:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.1);
+}
+
+.search-prompt small {
+    display: block;
+    margin-top: 0.5rem;
+}
+
+/* Divider */
+.params-divider {
+    text-align: center;
+    margin: 1.5rem 0;
+    position: relative;
+}
+
+.params-divider::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background-color: var(--border-color);
+    z-index: 0;
+}
+
+.params-divider span {
+    position: relative;
+    z-index: 1;
+    background-color: var(--bg-secondary);
+    padding: 0 0.75rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
 /* Buttons */
 .btn {
     padding: 0.75rem 1.5rem;

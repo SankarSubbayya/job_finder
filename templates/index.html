@@ -50,6 +50,23 @@
                         <h3>Search Preferences (Optional)</h3>
                         <p style="color: var(--text-secondary); margin-bottom: 1rem;">Override resume details or customize your search</p>
 
+                        <!-- Natural Language Search Prompt -->
+                        <div class="search-prompt">
+                            <label for="searchPrompt">📝 What are you looking for?</label>
+                            <textarea
+                                id="searchPrompt"
+                                class="input-field textarea-field"
+                                placeholder="e.g., Find me Python engineer jobs in San Francisco, or Remote data science positions"
+                                rows="3"
+                            ></textarea>
+                            <small style="color: var(--text-tertiary);">Natural language search - we'll extract job title and location</small>
+                        </div>
+
+                        <!-- Or use specific fields -->
+                        <div class="params-divider">
+                            <span>or</span>
+                        </div>
+
                         <div class="param-inputs">
                             <div class="param-input">
                                 <label for="jobTitle">Job Title</label>
