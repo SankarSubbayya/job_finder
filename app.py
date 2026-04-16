@@ -48,8 +48,12 @@ def search_jobs():
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
 
-        # Run job finder
-        result = run_job_finder(filepath)
+        # Get optional parameters
+        job_title = request.form.get('job_title')
+        location = request.form.get('location')
+
+        # Run job finder with optional parameters
+        result = run_job_finder(filepath, job_title=job_title, location=location)
 
         # Clean up uploaded file
         os.remove(filepath)

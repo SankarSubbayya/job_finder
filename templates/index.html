@@ -45,6 +45,34 @@
                         <div id="fileName" class="file-name"></div>
                     </div>
 
+                    <!-- Optional Search Parameters -->
+                    <div class="search-params">
+                        <h3>Search Preferences (Optional)</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Override resume details or customize your search</p>
+
+                        <div class="param-inputs">
+                            <div class="param-input">
+                                <label for="jobTitle">Job Title</label>
+                                <input
+                                    type="text"
+                                    id="jobTitle"
+                                    placeholder="e.g., Python Engineer, Data Scientist"
+                                    class="input-field"
+                                >
+                            </div>
+
+                            <div class="param-input">
+                                <label for="location">Location</label>
+                                <input
+                                    type="text"
+                                    id="location"
+                                    placeholder="e.g., San Francisco, CA or Remote"
+                                    class="input-field"
+                                >
+                            </div>
+                        </div>
+                    </div>
+
                     <button
                         id="searchBtn"
                         class="btn btn-large"

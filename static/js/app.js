@@ -82,6 +82,13 @@ async function startSearch() {
     const formData = new FormData();
     formData.append('resume', selectedFile);
 
+    // Add optional parameters
+    const jobTitle = document.getElementById('jobTitle').value.trim();
+    const location = document.getElementById('location').value.trim();
+
+    if (jobTitle) formData.append('job_title', jobTitle);
+    if (location) formData.append('location', location);
+
     try {
         // Simulate progress
         simulateProgress();
@@ -307,6 +314,8 @@ function resetSearch() {
     fileInput.value = '';
     fileName.classList.remove('show');
     fileName.textContent = '';
+    document.getElementById('jobTitle').value = '';
+    document.getElementById('location').value = '';
     searchBtn.disabled = true;
 
     uploadSection.style.display = 'block';

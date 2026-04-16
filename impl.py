@@ -13,12 +13,14 @@ from enricher import enrich_with_company_info
 from formatter import format_job_results, format_matching_summary
 
 
-def run_job_finder(pdf_path: str) -> Dict:
+def run_job_finder(pdf_path: str, job_title: str = None, location: str = None) -> Dict:
     """
     Run the complete job finder pipeline.
 
     Args:
         pdf_path: Path to resume PDF
+        job_title: Optional job title to search for (overrides resume)
+        location: Optional location to search in (overrides resume)
 
     Returns:
         Dictionary with:
@@ -38,6 +40,12 @@ def run_job_finder(pdf_path: str) -> Dict:
             "matched_jobs": [],
             "resume_info": {}
         }
+
+    # Override with user inputs if provided
+    if job_title:
+        resume_info['title'] = job_title
+    if location:
+        resume_info['location'] = location
 
     print(f"  ✓ Extracted profile:")
     print(f"    - Title: {resume_info['title']}")
@@ -142,12 +150,34 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Job Finder Agent")
     parser.add_argument("--resume", "-r", required=True, help="Path to resume PDF")
+    parser.add_argument("--job-title", "-j", default=None, help="Job title to search for (overrides resume)")
+    parser.add_argument("--location", "-l", default=None, help="Location to search in (overrides resume)")
     parser.add_argument("--output", "-o", default="job_matches.json", help="Output JSON file")
+    parser.add_argument("--interactive", "-i", action="store_true", help="Ask for job title and location interactively")
 
     args = parser.parse_args()
 
+    # Interactive mode
+    job_title = args.job_title
+    location = args.location
+
+    if args.interactive or (not job_title and not location):
+        print("\n" + "="*60)
+        print("🎯 JOB FINDER - SEARCH PREFERENCES")
+        print("="*60)
+
+        user_input = input("\n🔍 What type of job are you looking for? (or press Enter to use resume): ").strip()
+        if user_input:
+            job_title = user_input
+
+        user_input = input("📍 What location? (or press Enter to use resume): ").strip()
+        if user_input:
+            location = user_input
+
+        print()
+
     # Run the job finder
-    result = run_job_finder(args.resume)
+    result = run_job_finder(args.resume, job_title=job_title, location=location)
 
     # Print results
     if "error" in result:
