@@ -37,22 +37,36 @@ def extract_job_title(text: str) -> str:
 
     # Look for common job title patterns with better matching
     title_patterns = [
-        r'(?:current\s+)?(?:title|position|role):\s*([^\n,]+)',
-        r'(?:experience|employment).*?(?:title|position):\s*([^\n,]+)',
-        # Match titles with common prefixes followed by role keywords
-        r'(?:senior|junior|lead|principal|staff|director|head|manager)?\s+(\w+(?:\s+\w+)*)\s*(?:engineer|developer|analyst|manager|architect|scientist|lead|director)',
-        # Match any capitalized phrase that looks like a title
-        r'^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*(?:\s+(?:Engineer|Developer|Manager|Analyst|Architect|Lead|Director)))',
+        # Explicit title/position labels
+        r'(?:current\s+)?(?:title|position|role):\s*([^\n,?]+?)(?:\s*[?,\n]|$)',
+        # Experience section with title
+        r'(?:experience|employment|work\s+history).*?(?:title|position|role):\s*([^\n,?]+?)(?:\s*[?,\n]|$)',
+        # Common pattern: "Title at Company" on a line
+        r'^(?:currently\s+)?(?:a\s+)?([A-Z][a-z]*(?:\s+[A-Z][a-z]*)*)\s+(?:engineer|developer|analyst|manager|architect|scientist|director|lead|specialist|officer|coordinator|specialist)',
+        # Fallback: Look for role keywords with optional prefix
+        r'(?:senior|junior|lead|principal|staff|director|head|manager|chief|principal)?\s+([a-z]+(?:\s+[a-z]+)*)\s*(?:engineer|developer|analyst|manager|architect|scientist)',
     ]
 
+    # Try each pattern
     for pattern in title_patterns:
-        match = re.search(pattern, text, re.MULTILINE | re.IGNORECASE)
-        if match:
+        matches = re.finditer(pattern, text, re.MULTILINE | re.IGNORECASE)
+        for match in matches:
             title = match.group(1).strip()
-            if title and len(title) > 2 and len(title) < 50:  # Reasonable title length
-                # Filter out common noise words
-                if not any(noise in title.lower() for noise in ['http', 'email', 'phone', 'linkedin']):
-                    return title.title()
+
+            # Clean up the title
+            title = re.sub(r'[?,!]+$', '', title)  # Remove trailing punctuation
+            title = re.sub(r'\s+', ' ', title)     # Normalize whitespace
+
+            # Validate
+            if (title and
+                2 < len(title) < 60 and
+                not any(noise in title.lower() for noise in ['http', 'email', 'phone', 'linkedin', '?', 'experience', 'employment'])):
+                # Prefer shorter, cleaner titles (first word or two)
+                words = title.split()
+                if len(words) > 3:
+                    # If too many words, try to extract just the main role
+                    title = ' '.join(words[:2])
+                return title.title()
 
     return "Software Engineer"  # Default fallback
 
