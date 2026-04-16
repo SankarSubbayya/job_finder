@@ -97,22 +97,37 @@ def _scrape_jobs_parallel(resume_info: Dict) -> List[Dict]:
     title = resume_info.get("title", "Software Engineer")
     location = resume_info.get("location", "Remote")
 
+    # Support comma-separated job titles as alternative searches
+    titles = [t.strip() for t in title.split(',') if t.strip()]
+    if not titles:
+        titles = ["Software Engineer"]
+
     results = []
 
-    # Try to scrape from all sources, but don't fail if one doesn't work
-    with ThreadPoolExecutor(max_workers=3) as executor:
-        futures = {
-            executor.submit(scrape_linkedin_jobs, title, location): "LinkedIn",
-            executor.submit(scrape_indeed_jobs, title, location): "Indeed",
-            executor.submit(scrape_hackernews_jobs): "HackerNews",
-        }
+    # Scrape for each job title
+    with ThreadPoolExecutor(max_workers=9) as executor:  # More workers for multiple titles
+        futures = {}
 
+        for search_title in titles:
+            futures[executor.submit(scrape_linkedin_jobs, search_title, location)] = f"LinkedIn ({search_title})"
+            futures[executor.submit(scrape_indeed_jobs, search_title, location)] = f"Indeed ({search_title})"
+
+        # HackerNews is general, only do once
+        futures[executor.submit(scrape_hackernews_jobs)] = "HackerNews"
+
+        job_counts = {}
         for future in as_completed(futures):
             source_name = futures[future]
             try:
                 jobs = future.result()
-                print(f"  ✓ {source_name}: {len(jobs)} jobs")
-                results.extend(jobs)
+                # Deduplicate as we go
+                unique_before = len(results)
+                for job in jobs:
+                    key = (job.get("title", "").lower(), job.get("company", "").lower())
+                    if not any(k == key for k, _ in [(j.get("title", "").lower(), j.get("company", "").lower()) for j in results]):
+                        results.append(job)
+
+                print(f"  ✓ {source_name}: {len(jobs)} jobs ({len(results) - unique_before} new)")
             except Exception as e:
                 print(f"  ⚠️  {source_name} failed: {e}")
 
