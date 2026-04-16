@@ -42,12 +42,24 @@ def scrape_linkedin_jobs(
         # Normalize results to consistent format
         normalized = []
         for job in results:
+            # Handle different field names Apify might return
+            title = (job.get("positionTitle") or
+                    job.get("title") or
+                    job.get("jobTitle") or
+                    "")
+            description = (job.get("jobDescription") or
+                          job.get("description") or
+                          "")
+            company = (job.get("companyName") or
+                      job.get("company") or
+                      "")
+
             normalized.append({
-                "title": job.get("positionTitle", ""),
-                "company": job.get("companyName", ""),
-                "location": job.get("location", location),
-                "description": job.get("jobDescription", ""),
-                "url": job.get("link", ""),
+                "title": title,
+                "company": company,
+                "location": job.get("location", "") or location,
+                "description": description,
+                "url": job.get("link", "") or job.get("url", "") or job.get("jobUrl", ""),
                 "salary": job.get("salary"),
                 "source": "linkedin"
             })

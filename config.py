@@ -16,7 +16,7 @@ HACKERNEWS_ACTOR_ID = "mstepith19/hacker-news-scraper"
 
 # Job scraping parameters
 JOBS_PER_SOURCE = 50
-MIN_JOB_SCORE = 0.2  # Minimum keyword match threshold
+MIN_JOB_SCORE = 0.35  # Minimum keyword match threshold (increased from 0.2 to filter junk)
 
 # you.com API endpoint
 YOU_COM_SEARCH_URL = "https://api.you.com/search"

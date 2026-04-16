@@ -35,18 +35,24 @@ def extract_job_title(text: str) -> str:
     """Extract current/last job title from resume."""
     text_lower = text.lower()
 
-    # Look for common job title patterns
+    # Look for common job title patterns with better matching
     title_patterns = [
-        r'(?:current\s+)?(?:title|position|role):\s*([^\n]+)',
-        r'(?:senior|junior|lead|principal|staff|director)?\s*(\w+(?:\s+\w+)*)\s*(?:engineer|developer|analyst|manager|architect)',
+        r'(?:current\s+)?(?:title|position|role):\s*([^\n,]+)',
+        r'(?:experience|employment).*?(?:title|position):\s*([^\n,]+)',
+        # Match titles with common prefixes followed by role keywords
+        r'(?:senior|junior|lead|principal|staff|director|head|manager)?\s+(\w+(?:\s+\w+)*)\s*(?:engineer|developer|analyst|manager|architect|scientist|lead|director)',
+        # Match any capitalized phrase that looks like a title
+        r'^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*(?:\s+(?:Engineer|Developer|Manager|Analyst|Architect|Lead|Director)))',
     ]
 
     for pattern in title_patterns:
-        match = re.search(pattern, text_lower, re.IGNORECASE)
+        match = re.search(pattern, text, re.MULTILINE | re.IGNORECASE)
         if match:
             title = match.group(1).strip()
-            if title and len(title) > 3:
-                return title.title()
+            if title and len(title) > 2 and len(title) < 50:  # Reasonable title length
+                # Filter out common noise words
+                if not any(noise in title.lower() for noise in ['http', 'email', 'phone', 'linkedin']):
+                    return title.title()
 
     return "Software Engineer"  # Default fallback
 
@@ -54,19 +60,32 @@ def extract_job_title(text: str) -> str:
 def extract_location(text: str) -> str:
     """Extract location/city from resume."""
     # Look for city, state patterns (e.g., "San Francisco, CA")
-    pattern = r'([A-Z][a-z]+),\s*([A-Z]{2})|([A-Z][a-z]+),\s*([A-Z][a-z]{1,})'
+    # More robust pattern that ensures we get valid locations
+    pattern = r'\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*),\s+([A-Z]{2})\b'
     match = re.search(pattern, text)
 
     if match:
-        city = match.group(1) or match.group(3)
-        state = match.group(2) or match.group(4)
-        return f"{city}, {state}"
+        city = match.group(1).strip()
+        state = match.group(2).strip()
+        if len(city) > 2 and len(state) == 2:  # Validate
+            return f"{city}, {state}"
 
-    # Fallback: try to find "Based in" pattern
-    pattern = r'(?:based|located)?\s+(?:in|@)\s+([^,\n]+)'
+    # Try alternate format: "City, State" or "City, Country"
+    pattern = r'\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*),\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b'
+    match = re.search(pattern, text)
+    if match:
+        city = match.group(1).strip()
+        state = match.group(2).strip()
+        if len(city) > 2 and len(state) > 2:
+            return f"{city}, {state}"
+
+    # Try "Based in" or "Located in" pattern
+    pattern = r'(?:based|located|living)?\s+(?:in|at)\s+([^\n,;]+)'
     match = re.search(pattern, text, re.IGNORECASE)
     if match:
-        return match.group(1).strip()
+        location = match.group(1).strip()
+        if location and len(location) > 2 and len(location) < 50:
+            return location.title()
 
     return "Remote"  # Default fallback
 

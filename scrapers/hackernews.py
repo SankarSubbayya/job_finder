@@ -62,12 +62,15 @@ def scrape_hackernews_jobs(
         normalized = []
         for item in results:
             # Extract job info from HN post format
+            title = item.get("title") or item.get("jobTitle") or ""
+            description = item.get("text") or item.get("description") or ""
+
             job_dict = {
-                "title": item.get("title", ""),
-                "company": extract_company_from_hn(item.get("title", "")),
-                "location": extract_location_from_hn(item.get("title", "")),
-                "description": item.get("text", ""),
-                "url": item.get("url", ""),
+                "title": title,
+                "company": extract_company_from_hn(title),
+                "location": extract_location_from_hn(title),
+                "description": description,
+                "url": item.get("url") or item.get("link") or "",
                 "source": "hackernews"
             }
 

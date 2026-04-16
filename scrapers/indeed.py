@@ -42,13 +42,24 @@ def scrape_indeed_jobs(
         # Normalize results to consistent format
         normalized = []
         for job in results:
+            # Handle different field names Apify might return
+            title = (job.get("title") or
+                    job.get("positionTitle") or
+                    job.get("jobTitle") or
+                    job.get("position") or
+                    "")
+            description = (job.get("description") or
+                          job.get("jobDescription") or
+                          job.get("snippet") or
+                          "")
+
             normalized.append({
-                "title": job.get("title", ""),
-                "company": job.get("company", ""),
-                "location": job.get("location", location),
-                "description": job.get("description", ""),
-                "url": job.get("link", "") or job.get("url", ""),
-                "salary": job.get("salary"),
+                "title": title,
+                "company": job.get("company", "") or job.get("companyName", ""),
+                "location": job.get("location", "") or location,
+                "description": description,
+                "url": job.get("link", "") or job.get("url", "") or job.get("jobUrl", ""),
+                "salary": job.get("salary") or job.get("salaryRange"),
                 "source": "indeed"
             })
 
