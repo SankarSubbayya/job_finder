@@ -1,0 +1,41 @@
+[project]
+name = "job-finder"
+version = "1.0.0"
+description = "AI-powered job matching agent that finds your perfect role by analyzing your resume and searching multiple job boards in real-time"
+authors = [
+    {name = "Job Finder Team", email = "jobs@finder.ai"}
+]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.8"
+keywords = ["jobs", "career", "recruitment", "resume", "employment", "apify", "you.com"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Utilities",
+]
+
+dependencies = [
+    "pdfplumber>=0.10.0",
+    "apify-client>=1.7.0",
+    "requests>=2.31.0",
+    "python-dotenv>=1.0.0",
+    "flask>=2.3.0",
+    "werkzeug>=2.3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+]
+
+[build-system]
+requires = ["setuptools>=65.0"]
+build-backend = "setuptools.build_meta"
