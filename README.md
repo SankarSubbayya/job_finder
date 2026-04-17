@@ -1,6 +1,8 @@
-# 🎯 Job Finder Agent
+# 🏆 Job Finder Agent - 2nd Prize Winner (ClawCamp Hackathon)
 
 > **An intelligent AI-powered job matching system that analyzes your resume and searches multiple job boards in real-time to find positions perfectly aligned with your skills and experience.**
+>
+> **🎖️ Prize-Winning Features: Multi-source scraping | Intelligent algorithms | Beautiful UI | Full-stack implementation**
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -470,9 +472,71 @@ See [TESTING.md](TESTING.md) for more troubleshooting.
 
 ---
 
+## 🏅 Reusable for Other Hackathons
+
+This project won **2nd Prize** in the ClawCamp Hackathon because of its **modular, extensible architecture**. You can adapt it for any matching/discovery problem:
+
+### 🔄 Quick Adaptation Guide
+
+**Instead of job matching, use for:**
+- 🏠 **Apartment Finder** - Match preferences with rental listings
+- 🍕 **Restaurant Discovery** - Match dietary preferences with restaurants
+- 📚 **Course Finder** - Match learning goals with online courses
+- 💻 **Product Recommendations** - Match needs with products
+- 🏥 **Doctor Finder** - Match health needs with specialists
+
+### 🔧 How to Adapt (3 Steps)
+
+1. **Replace the scraper** - Swap Apify actors for your data source
+2. **Modify the matcher** - Change weights based on your domain
+3. **Update the UI** - Customize colors, labels, and fields
+
+### 📂 Key Files to Modify
+
+```
+scrapers/             → Replace with your data sources
+pdf_parser.py         → Replace with your input parser
+matcher.py            → Adjust scoring algorithm
+templates/index.html  → Update UI labels
+```
+
+### 💡 Example: Apartment Finder
+
+```python
+# Replace resume parsing with apartment preferences
+user_prefs = {
+    "budget": 2000,
+    "bedrooms": 2,
+    "amenities": ["gym", "pool", "parking"],
+    "location": "San Francisco"
+}
+
+# Replace job matching with apartment matching
+score = (
+    0.40 * price_match +      # Budget most important
+    0.25 * bedroom_match +    # Need right size
+    0.20 * location_match +   # Location matters
+    0.15 * amenities_match    # Amenities secondary
+)
+```
+
+### 📊 Winning Strategy
+
+This project won because it demonstrates:
+✅ **Full-stack skills** (Python + JavaScript + HTML/CSS)
+✅ **Real APIs** (Apify + You.com)
+✅ **Smart algorithms** (weighted matching)
+✅ **Beautiful UI** (good UX matters)
+✅ **Complete solution** (CLI + Web + API)
+✅ **Production-ready** (error handling, documentation)
+
+**See [SKILLS.md](SKILLS.md) for complete technical breakdown and hackathon adaptation tips.**
+
+---
+
 ## 📄 License
 
-MIT License - Free to use and modify
+MIT License - Free to use and modify. Great for hackathons and competitions!
 
 ---
 
