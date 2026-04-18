@@ -1,579 +1,77 @@
-# 🏆 Job Finder Agent - 2nd Prize Winner (ClawCamp Hackathon)
+# MarketIntelligence
 
-> **An intelligent AI-powered job matching system that analyzes your resume and searches multiple job boards in real-time to find positions perfectly aligned with your skills and experience.**
->
-> **🎖️ Prize-Winning Features: Multi-source scraping | Intelligent algorithms | Beautiful UI | Full-stack implementation**
-
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://img.shields.io/badge/status-active-brightgreen.svg)](https://github.com)
+> **An autonomous lead intelligence agent that discovers, enriches, and qualifies prospects using advanced web scraping and AI-powered scoring.**
 
 ---
 
-## 📖 Table of Contents
+## Overview
 
-- [Features](#-features)
-- [Project Description](#-project-description)
-- [Quick Start](#-quick-start)
-- [Usage](#-usage)
-  - [Web UI](#web-ui)
-  - [Command Line](#command-line)
-  - [Python API](#python-api)
-- [Architecture](#-architecture)
-- [Project Structure](#-project-structure)
-- [Configuration](#-configuration)
-- [Contributing](#-contributing)
-- [License](#-license)
+MarketIntelligence is a GTM agent built for the Marketing Agents Hackathon (April 18, 2026). It automates prospect discovery and qualification by:
+
+1. **Scraping data** via Apify to identify target prospects
+2. **Enriching leads** with company and contact information
+3. **Qualifying prospects** using AI-powered relevance scoring
+4. **Delivering actionable insights** for sales and marketing teams
 
 ---
 
-## ✨ Features
+## Features
 
-### 🔍 Multi-Source Job Search
-- **LinkedIn Jobs** - Real-time job postings via Apify
-- **Indeed** - Comprehensive job listings
-- **HackerNews** - Monthly "Who is Hiring?" threads for startup roles
-
-### 🧠 Intelligent Resume Parsing
-- Extract job title, skills, location, and experience level
-- Support for various resume formats
-- Automatic skill detection from text
-
-### ⭐ Smart Job Matching
-- **Weighted Scoring Algorithm:**
-  - 40% Skills match (most important)
-  - 30% Job title relevance
-  - 20% Location compatibility
-  - 10% Company reputation
-- Deduplication across sources
-- Configurable match thresholds
-
-### 🏢 Company Enrichment
-- Real-time company research via You.com API
-- Company summaries and descriptions
-- Benefits and perks information
-- Enhanced job decision-making
-
-### 📊 Multiple Output Formats
-- **Terminal** - Colored, human-readable output with progress bars
-- **JSON** - Structured data for further processing
-- **HTML** - Web-viewable format (optional)
-
-### 🎨 Beautiful Web UI
-- Claude-style modern interface
-- Drag-and-drop resume upload
-- Real-time progress tracking
-- Color-coded match scores
-- Direct apply links
-- Responsive design (desktop, tablet, mobile)
-
-### ⚡ Fast & Reliable
-- Parallel job scraping (30-60 seconds for 150+ jobs)
-- Comprehensive error handling
-- Graceful fallbacks if sources fail
-- Timeout management
+- 🕷️ **Apify Integration** — Web scraping for prospect discovery
+- 🧠 **Intelligent Scoring** — AI-powered lead qualification
+- 📊 **Lead Enrichment** — Company research and data synthesis
+- ⚡ **Fast Processing** — Parallel scraping and scoring
+- 📈 **Actionable Insights** — Qualified prospects ready for outreach
 
 ---
 
-## 💡 Project Description
+## Tech Stack
 
-### The Problem
-Job searching is time-consuming and inefficient. Most job boards rely on simple keyword matching, showing irrelevant results. Users waste hours sorting through positions that don't match their skills or career goals.
-
-### The Solution
-**Job Finder Agent** automates intelligent job matching by:
-
-1. **Parsing Your Resume** - Extracts structured job profile data
-2. **Searching Multiple Sources** - Finds jobs across LinkedIn, Indeed, and HackerNews simultaneously
-3. **Intelligent Matching** - Uses weighted scoring to rank jobs by relevance, not just keywords
-4. **Enriching Results** - Adds company research and details for informed decisions
-5. **Beautiful Presentation** - Shows results in easy-to-understand format (web or CLI)
-
-### Why It's Different
-
-| Feature | Job Finder | Generic Job Board |
-|---------|-----------|------------------|
-| **Matching Algorithm** | Weighted multi-factor | Simple keyword search |
-| **Company Research** | AI-powered (You.com) | Manual lookup needed |
-| **Multiple Sources** | 3 platforms unified | Single platform |
-| **Resume Analysis** | Automatic extraction | Manual profile creation |
-| **Match Scoring** | Relevance-based (0-100%) | No scoring |
-| **User Experience** | Beautiful UI | Basic interface |
-
-### Use Cases
-
-- 🔄 **Career Changers** - Find roles matching your transferable skills
-- 🚀 **Job Seekers** - Discover perfect matches faster
-- 🎓 **Graduates** - Find entry-level positions matching your skills
-- 📈 **Promotions** - Identify senior/management roles
-- 🌍 **Remote Workers** - Filter remote-friendly positions
-- 🤖 **Automation** - Integrate into job hunting workflows
+- **Python 3.8+** — Core agent logic
+- **Apify** — Web scraping actors
+- **Claude API** — Lead scoring and enrichment
+- **Flask** — Web UI (optional)
 
 ---
 
-## 🚀 Quick Start
-
-### Prerequisites
-- Python 3.8+
-- UV package manager (or pip)
-- Apify account (free tier available)
-- You.com API key (optional, for company enrichment)
-
-### Installation (5 minutes)
+## Quick Start
 
 ```bash
-# 1. Clone/navigate to project
-cd /Users/sankar/projects/job_finder
+# Install dependencies
+pip install -r requirements.txt
 
-# 2. Create virtual environment
-uv venv
-source .venv/bin/activate
+# Set up environment
+cp .env.example .env
+# Fill in: APIFY_API_KEY, CLAUDE_API_KEY
 
-# 3. Install dependencies
-uv sync
-
-# 4. Verify setup
-python check.py
-
-# Should show: ✅ All checks passed!
-```
-
-### Configuration
-
-1. **Get API Keys:**
-   - Apify: https://console.apify.com/account/integrations
-   - You.com: https://you.com/apis (optional)
-
-2. **Add to `.env`:**
-   ```bash
-   APIFY_TOKEN=your_apify_token_here
-   YOU_API_KEY=your_you_api_key_here
-   ```
-
-3. **Test:**
-   ```bash
-   python check.py
-   ```
-
----
-
-## 📖 Usage
-
-### 🌐 Web UI (Recommended)
-
-```bash
-# Start web server
-python app.py
-
-# Open browser
-open http://localhost:5000
-```
-
-**Features:**
-- Clean, Claude-style interface
-- Drag-and-drop resume upload
-- Real-time progress updates
-- Beautiful job cards
-- Export results as JSON
-
-See [WEB_SETUP.md](WEB_SETUP.md) for detailed web UI guide.
-
-### 💻 Command Line
-
-```bash
-# Basic usage
-python impl.py --resume path/to/resume.pdf
-
-# With custom output
-python impl.py --resume resume.pdf --output results.json
-
-# Example output:
-# 🔍 Job Finder Agent Starting...
-# 📄 Parsing resume... ✓
-# 🕷️  Scraping job boards... ✓
-# ⭐ Ranking jobs... ✓ 18 matches
-# 🏢 Enriching with company info... ✓
-# ✨ Formatting results...
-# ✅ Job Finder Complete!
-#
-# 📋 Your Job Search Summary
-# [... 10 top jobs with details ...]
-# 💾 Results saved to job_matches.json
-```
-
-### 🐍 Python API
-
-```python
-from impl import run_job_finder
-
-# Run job finder
-result = run_job_finder("resume.pdf")
-
-# Access results
-print(f"Found {result['total_matches']} matching jobs")
-print(f"Top match: {result['matched_jobs'][0]['title']}")
-
-# Work with data
-for job in result['matched_jobs']:
-    print(f"{job['title']} at {job['company']}: {job['match_score']*100:.0f}% match")
+# Run agent
+python market_intelligence.py
 ```
 
 ---
 
-## 🏗️ Architecture
-
-### System Flow
+## Project Structure
 
 ```
-Resume (PDF)
-    ↓
-┌─────────────────────────┐
-│  PDF Parser             │  Extract text, skills, title, location, level
-└─────────────────────────┘
-    ↓
-┌─────────────────────────────────────────────────┐
-│  Parallel Job Scraping                          │
-├─────────────────────────────────────────────────┤
-│ LinkedIn Jobs │ Indeed Jobs │ HackerNews Jobs  │
-└─────────────────────────────────────────────────┘
-    ↓
-┌─────────────────────────┐
-│  Deduplication          │  Remove duplicate jobs across sources
-└─────────────────────────┘
-    ↓
-┌─────────────────────────┐
-│  Job Matching           │  Score each job (0-1 scale)
-│  & Ranking              │  - Skills match (40%)
-│                         │  - Title match (30%)
-│                         │  - Location (20%)
-│                         │  - Company (10%)
-└─────────────────────────┘
-    ↓
-┌─────────────────────────┐
-│  Company Enrichment     │  Add company info via You.com API
-└─────────────────────────┘
-    ↓
-┌─────────────────────────┐
-│  Formatting             │  Terminal, JSON, or HTML output
-└─────────────────────────┘
-    ↓
-Results (Ranked Jobs with Details)
-```
-
-### Technology Stack
-
-| Component | Technology | Purpose |
-|-----------|-----------|---------|
-| **Resume Parsing** | pdfplumber | Extract text from PDFs |
-| **Job Scraping** | Apify API | Access LinkedIn, Indeed, HackerNews |
-| **Company Research** | You.com API | Enrich results with company info |
-| **Matching Algorithm** | Python | Weighted scoring system |
-| **Web Framework** | Flask | Web server and API |
-| **Frontend** | HTML/CSS/JS | Beautiful user interface |
-| **Package Manager** | UV | Fast Python dependency management |
-
----
-
-## 📁 Project Structure
-
-```
-job_finder/
-├── Core Implementation
-│   ├── impl.py                 # Main orchestrator (156 lines)
-│   ├── pdf_parser.py           # Resume parsing (138 lines)
-│   ├── matcher.py              # Job ranking algorithm (187 lines)
-│   ├── enricher.py             # You.com integration (136 lines)
-│   ├── formatter.py            # Output formatting (145 lines)
-│   └── config.py               # Configuration (42 lines)
-│
-├── Job Scrapers
-│   ├── scrapers/
-│   │   ├── apify_client.py     # Apify API wrapper (78 lines)
-│   │   ├── linkedin.py         # LinkedIn scraper (60 lines)
-│   │   ├── indeed.py           # Indeed scraper (60 lines)
-│   │   └── hackernews.py       # HackerNews scraper (126 lines)
-│
-├── Web Application
-│   ├── app.py                  # Flask server
-│   ├── templates/
-│   │   └── index.html          # Main HTML page
-│   └── static/
-│       ├── css/style.css       # Claude-style CSS
-│       └── js/app.js           # Frontend JavaScript
-│
-├── Configuration
-│   ├── pyproject.toml          # Python project config
-│   ├── requirements.txt        # Dependencies
-│   ├── .env.example            # Config template
-│   └── .gitignore              # Git exclusions
-│
-├── Documentation
-│   ├── README.md               # This file
-│   ├── SETUP.md                # Detailed setup guide
-│   ├── UV_SETUP.md             # UV package manager guide
-│   ├── WEB_SETUP.md            # Web UI guide
-│   ├── TESTING.md              # Testing guide
-│   ├── SUBMISSION.md           # Hackathon submission
-│   └── COMPLETION.md           # Project completion
-│
-├── Utilities
-│   ├── check.py                # Setup verification script
-│   └── uploads/                # Temporary resume storage
-│
-└── Total: ~1,200 lines of production Python code
+├── market_intelligence.py    # Main agent logic
+├── scraper.py              # Apify integration
+├── enricher.py             # Lead enrichment
+├── scorer.py               # AI-powered qualification
+├── app.py                  # Web UI (optional)
+└── requirements.txt        # Dependencies
 ```
 
 ---
 
-## 🔧 Configuration
+## Hackathon Challenge
 
-### Environment Variables (.env)
-
-```bash
-# Required: Apify API Token
-# Get from: https://console.apify.com/account/integrations
-APIFY_TOKEN=your_apify_token_here
-
-# Optional: You.com API Key (for company enrichment)
-# Get from: https://you.com/apis
-YOU_API_KEY=your_you_api_key_here
-```
-
-### Configurable Parameters (config.py)
-
-```python
-JOBS_PER_SOURCE = 50           # Max jobs per scraper
-MIN_JOB_SCORE = 0.2            # Minimum match threshold (0-1)
-COMMON_SKILLS = [...]          # Skills to detect
-LEVEL_KEYWORDS = {...}         # Experience level patterns
-```
+Built for Marketing Agents Hackathon 2026:
+- **Goal:** Find ICPs, qualify leads, ship campaigns, report results
+- **Sponsors:** Apify, Lovable, Minds AI, Kalibr, Pixero
+- **Deadline:** April 18, 2026 (3 PM PT)
 
 ---
 
-## 📊 Performance
+## License
 
-| Metric | Value |
-|--------|-------|
-| Resume Parse Time | 0.5-1 sec |
-| Job Scraping (parallel) | 30-60 sec |
-| Matching & Ranking | 1-2 sec |
-| Company Enrichment | 5-10 sec |
-| **Total Time** | **40-75 sec** |
-| **Jobs Processed** | **150-200** |
-| **Top Matches** | **10-20** |
-
----
-
-## 🧪 Testing
-
-### Quick Verification
-```bash
-python check.py
-```
-
-### Full Integration Test
-```bash
-python impl.py --resume test_resume.pdf
-```
-
-### Web UI Test
-```bash
-python app.py
-# Visit http://localhost:5000
-```
-
-See [TESTING.md](TESTING.md) for comprehensive testing guide.
-
----
-
-## 🔒 Security
-
-- ✅ API keys stored in `.env` (in `.gitignore`, not in version control)
-- ✅ No hardcoded secrets
-- ✅ PDF parsing sandboxed
-- ✅ Request timeouts prevent hanging
-- ✅ File upload validation (PDF only, max 16MB)
-- ✅ Safe error messages (no key leakage)
-
-**Never commit `.env` to version control!**
-
----
-
-## 🤝 Contributing
-
-### Development Setup
-```bash
-uv venv
-source .venv/bin/activate
-uv sync
-```
-
-### Code Style
-- Python 3.8+ compatible
-- Clear variable names
-- Minimal comments (code is self-documenting)
-- Error handling for all components
-
-### Adding Features
-1. Create feature branch
-2. Update relevant module
-3. Update tests in [TESTING.md](TESTING.md)
-4. Update documentation
-5. Commit with clear message
-
----
-
-## 📚 Documentation Files
-
-| File | Purpose |
-|------|---------|
-| [SETUP.md](SETUP.md) | Complete setup instructions |
-| [UV_SETUP.md](UV_SETUP.md) | UV package manager guide |
-| [WEB_SETUP.md](WEB_SETUP.md) | Web UI detailed guide |
-| [TESTING.md](TESTING.md) | Testing and troubleshooting |
-| [SUBMISSION.md](SUBMISSION.md) | Hackathon submission details |
-| [COMPLETION.md](COMPLETION.md) | Project completion checklist |
-
----
-
-## 🐛 Troubleshooting
-
-### "ModuleNotFoundError: No module named 'flask'"
-```bash
-uv sync
-```
-
-### "APIFY_TOKEN not set"
-1. Check `.env` file exists
-2. Verify token from https://console.apify.com
-3. Make sure `.env` is in project root
-
-### No jobs found
-- Ensure resume has clear job title
-- Add more technical skills to resume
-- Try less specific job titles
-- Check internet connection
-
-### Slow execution
-- First run initializes APIs
-- Subsequent runs are faster
-- Apify actors may take 30-60 seconds
-
-See [TESTING.md](TESTING.md) for more troubleshooting.
-
----
-
-## 📞 Support
-
-- **Apify Docs:** https://docs.apify.com
-- **You.com API:** https://you.com/apis
-- **pdfplumber:** https://github.com/jsvine/pdfplumber
-- **Flask:** https://flask.palletsprojects.com/
-
----
-
-## 🏅 Reusable for Other Hackathons
-
-This project won **2nd Prize** in the ClawCamp Hackathon because of its **modular, extensible architecture**. You can adapt it for any matching/discovery problem:
-
-### 🔄 Quick Adaptation Guide
-
-**Instead of job matching, use for:**
-- 🏠 **Apartment Finder** - Match preferences with rental listings
-- 🍕 **Restaurant Discovery** - Match dietary preferences with restaurants
-- 📚 **Course Finder** - Match learning goals with online courses
-- 💻 **Product Recommendations** - Match needs with products
-- 🏥 **Doctor Finder** - Match health needs with specialists
-
-### 🔧 How to Adapt (3 Steps)
-
-1. **Replace the scraper** - Swap Apify actors for your data source
-2. **Modify the matcher** - Change weights based on your domain
-3. **Update the UI** - Customize colors, labels, and fields
-
-### 📂 Key Files to Modify
-
-```
-scrapers/             → Replace with your data sources
-pdf_parser.py         → Replace with your input parser
-matcher.py            → Adjust scoring algorithm
-templates/index.html  → Update UI labels
-```
-
-### 💡 Example: Apartment Finder
-
-```python
-# Replace resume parsing with apartment preferences
-user_prefs = {
-    "budget": 2000,
-    "bedrooms": 2,
-    "amenities": ["gym", "pool", "parking"],
-    "location": "San Francisco"
-}
-
-# Replace job matching with apartment matching
-score = (
-    0.40 * price_match +      # Budget most important
-    0.25 * bedroom_match +    # Need right size
-    0.20 * location_match +   # Location matters
-    0.15 * amenities_match    # Amenities secondary
-)
-```
-
-### 📊 Winning Strategy
-
-This project won because it demonstrates:
-✅ **Full-stack skills** (Python + JavaScript + HTML/CSS)
-✅ **Real APIs** (Apify + You.com)
-✅ **Smart algorithms** (weighted matching)
-✅ **Beautiful UI** (good UX matters)
-✅ **Complete solution** (CLI + Web + API)
-✅ **Production-ready** (error handling, documentation)
-
-**See [SKILLS.md](SKILLS.md) for complete technical breakdown and hackathon adaptation tips.**
-
----
-
-## 📄 License
-
-MIT License - Free to use and modify. Great for hackathons and competitions!
-
----
-
-## 🎉 Getting Started
-
-```bash
-# 1. Setup
-cd job_finder
-uv venv
-source .venv/bin/activate
-uv sync
-
-# 2. Configure
-# Edit .env with your API keys
-
-# 3. Run (choose one)
-python impl.py --resume resume.pdf      # CLI
-# OR
-python app.py                            # Web UI at localhost:5000
-
-# 4. View results
-# CLI: Terminal output + job_matches.json
-# Web: Beautiful browser interface
-```
-
----
-
-## 🚀 Next Steps
-
-1. **[Quick Start](#-quick-start)** - Get up and running
-2. **[SETUP.md](SETUP.md)** - Detailed setup guide
-3. **[WEB_SETUP.md](WEB_SETUP.md)** - Use beautiful web UI
-4. **[TESTING.md](TESTING.md)** - Test the application
-5. **Find jobs!** - Upload resume and search
-
----
-
-**Built with ❤️ for the OpenClaw Hackathon 2026**
-
-*Find your perfect job in 45-75 seconds!* 🎯
+MIT

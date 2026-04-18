@@ -1,0 +1,34 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//job_apply//Marketing Agent Hackathon//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VTIMEZONE
+TZID:America/Los_Angeles
+BEGIN:DAYLIGHT
+TZOFFSETFROM:-0800
+TZOFFSETTO:-0700
+TZNAME:PDT
+DTSTART:19700308T020000
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU
+END:DAYLIGHT
+BEGIN:STANDARD
+TZOFFSETFROM:-0700
+TZOFFSETTO:-0800
+TZNAME:PST
+DTSTART:19701101T020000
+RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+UID:marketing-agent-hackathon-2026@job_apply.local
+DTSTAMP:20260418T160000Z
+DTSTART;TZID=America/Los_Angeles:20260418T090000
+DTEND;TZID=America/Los_Angeles:20260418T163000
+SUMMARY:Marketing Agents Hackathon (GTM agents)
+LOCATION:Entrepreneurs First\, 501 Folsom St\, San Francisco\, CA 94105
+URL:https://lynkapp.vercel.app/marketing-agents-hackathon
+DESCRIPTION:Marketing Agents Hackathon — Build Your Own GTM Agents.\n\nThe AI Collective x Lynk. In-person at EF.\n\nConfirm: https://lynkapp.vercel.app/marketing-agents-hackathon\nDiscord: https://discord.gg/a8w4Y7jt\n\nSchedule: 9:00 check-in\, 9:30 kickoff\, 10:00 hack\, 12:30 lunch\, 15:00 submissions/demos\, 16:00 finalists\, 16:30 winners.\n
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR
