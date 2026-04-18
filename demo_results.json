@@ -1,0 +1,82 @@
+[
+  {
+    "name": "CloudFirst AI",
+    "url": "https://cloudfirst.ai",
+    "snippet": "Enterprise AI infrastructure for data teams",
+    "source": "google",
+    "industry": "Enterprise AI/ML",
+    "company_size": "50-200",
+    "funding_stage": "Series B",
+    "pain_points": [
+      "ML Operations",
+      "Data Governance"
+    ],
+    "decision_makers": [
+      "VP Engineering",
+      "CTO"
+    ],
+    "score": 95,
+    "score_reason": "Exceptional ICP fit: right stage, size, and pain points",
+    "engagement_level": "high"
+  },
+  {
+    "name": "DataFlow Systems",
+    "url": "https://dataflow.io",
+    "snippet": "Real-time data pipeline and analytics platform",
+    "source": "google",
+    "industry": "Data Infrastructure",
+    "company_size": "100-300",
+    "funding_stage": "Series B",
+    "pain_points": [
+      "Pipeline Reliability",
+      "Cost Optimization"
+    ],
+    "decision_makers": [
+      "VP Data",
+      "Head of Eng"
+    ],
+    "score": 90,
+    "score_reason": "Exceptional ICP fit: right stage, size, and pain points",
+    "engagement_level": "high"
+  },
+  {
+    "name": "Growth Analytics Co",
+    "url": "https://growthanalytics.io",
+    "snippet": "Customer analytics and predictive insights",
+    "source": "google",
+    "industry": "MarTech/Analytics",
+    "company_size": "75-250",
+    "funding_stage": "Series A",
+    "pain_points": [
+      "Attribution",
+      "Real-time Analytics"
+    ],
+    "decision_makers": [
+      "VP Product",
+      "Head of Analytics"
+    ],
+    "score": 85,
+    "score_reason": "Strong match: Series B status, good size, aligned needs",
+    "engagement_level": "high"
+  },
+  {
+    "name": "SecureVault Pro",
+    "url": "https://securevault.pro",
+    "snippet": "Enterprise security and compliance automation",
+    "source": "google",
+    "industry": "Enterprise Security",
+    "company_size": "150-400",
+    "funding_stage": "Series C",
+    "pain_points": [
+      "Compliance Automation",
+      "Incident Response"
+    ],
+    "decision_makers": [
+      "CISO",
+      "VP Security"
+    ],
+    "score": 65,
+    "score_reason": "Moderate fit: some ICP alignment, worth reaching out",
+    "engagement_level": "medium"
+  }
+]
