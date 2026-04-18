@@ -17,29 +17,47 @@ def test_red_examples():
     # R1: Florida SMS with financial claim
     print("\n🚫 R1: SMS blast to Florida + financial product")
     r1_message = "Hi, quick note — we're offering fast commercial lending for SMBs. Rates from 6.5%. Reply YES to learn more or STOP to opt out."
-    r1_result = gate.validate_outreach(r1_message, has_ai_disclosure=True, is_customer_facing=True)
+    r1_result = gate.validate_outreach(
+        r1_message,
+        has_ai_disclosure=True,
+        is_customer_facing=True,
+        channel="sms",
+        recipient_region="FL"
+    )
     print(f"   Message: {r1_message[:60]}...")
     print(f"   Verdict: {'BLOCKED' if not r1_result['approved'] else 'PASSED (ERROR!)'}")
     print(f"   Blockers: {r1_result['blockers']}")
-    print(f"   ⚠️  Should check: Florida area code + SMS + auto-dialer + quantified claim")
+    print(f"   ⚠️  Check: SMS to Florida (FTSA § 501.059 = $500/msg)")
 
     # R2: Cloned voice call script (quantified claim)
     print("\n🚫 R2: AI cloned voice call to Canada + quantified claim")
     r2_message = "We've been helping Canadian 3PLs automate their advance-ruling compliance — it's saving our customers about 30 hours a month per trade lane."
-    r2_result = gate.validate_outreach(r2_message, has_ai_disclosure=False, is_customer_facing=True)
+    r2_result = gate.validate_outreach(
+        r2_message,
+        has_ai_disclosure=False,
+        is_customer_facing=True,
+        channel="voice",
+        recipient_region="CA"
+    )
     print(f"   Message: {r2_message[:60]}...")
     print(f"   Verdict: {'BLOCKED' if not r2_result['approved'] else 'PASSED (ERROR!)'}")
     print(f"   Blockers: {r2_result['blockers']}")
-    print(f"   ⚠️  Should check: Cloned voice detection + cross-border + no consent")
+    print(f"   ⚠️  Check: Voice to CA (CASL + TCPA), missing AI disclosure, quantified claim")
 
     # R3: Deepfake video with quantified claim
     print("\n🚫 R3: Deepfake video endorsement + quantified claim")
     r3_message = "At your company, we know you're facing reconciliation challenges. We cut our monthly close from 14 days to 5 using this product."
-    r3_result = gate.validate_outreach(r3_message, has_ai_disclosure=False, is_customer_facing=True)
+    r3_result = gate.validate_outreach(
+        r3_message,
+        has_ai_disclosure=False,
+        is_customer_facing=True,
+        channel="video",
+        recipient_region="CO"
+    )
     print(f"   Message: {r3_message[:60]}...")
     print(f"   Verdict: {'BLOCKED' if not r3_result['approved'] else 'PASSED (ERROR!)'}")
     print(f"   Blockers: {r3_result['blockers']}")
-    print(f"   ⚠️  Should check: Deepfake detection + Colorado AI Act + fake endorsement")
+    print(f"   ⚠️  Check: Video to CO (Colorado AI Act), missing AI disclosure, quantified claim")
 
     print("\n" + "-"*70)
     print("CURRENT GATE LIMITATIONS:")
@@ -64,7 +82,13 @@ def test_green_examples():
     # G1: B2B email with AI disclosure
     print("\n✅ G1: B2B email with AI disclosure, no quantified claims")
     g1_message = "I read your CFO Dive article on agent sprawl. We help finance teams get per-agent unit economics. Happy to share a summary if useful."
-    g1_result = gate.validate_outreach(g1_message, has_ai_disclosure=True, is_customer_facing=True)
+    g1_result = gate.validate_outreach(
+        g1_message,
+        has_ai_disclosure=True,
+        is_customer_facing=True,
+        channel="email",
+        recipient_region="US"
+    )
     print(f"   Message: {g1_message[:60]}...")
     print(f"   Verdict: {'PASSED' if g1_result['approved'] else 'BLOCKED (ERROR!)'}")
     print(f"   Blockers: {g1_result['blockers']}")
@@ -72,7 +96,13 @@ def test_green_examples():
     # G2: LinkedIn message referencing public content
     print("\n✅ G2: LinkedIn referencing keynote, function-of-product only")
     g2_message = "Caught your Manifest 2026 keynote on CBAM. We build compliance-aware outreach tooling. Worth a conversation?"
-    g2_result = gate.validate_outreach(g2_message, has_ai_disclosure=True, is_customer_facing=True)
+    g2_result = gate.validate_outreach(
+        g2_message,
+        has_ai_disclosure=True,
+        is_customer_facing=True,
+        channel="email",
+        recipient_region="US"
+    )
     print(f"   Message: {g2_message[:60]}...")
     print(f"   Verdict: {'PASSED' if g2_result['approved'] else 'BLOCKED (ERROR!)'}")
     print(f"   Blockers: {g2_result['blockers']}")

@@ -411,6 +411,8 @@ Return ONLY valid JSON, no other text."""
                     message=outreach.get("body", ""),
                     has_ai_disclosure=outreach.get("ai_disclosed", False),
                     is_customer_facing=True,
+                    channel=outreach.get("channel", "email"),
+                    recipient_region=region,
                 )
 
                 if compliance_check["approved"]:
@@ -449,6 +451,8 @@ Return ONLY valid JSON, no other text."""
                         message=outreach.get("body", ""),
                         has_ai_disclosure=outreach.get("ai_disclosed", False),
                         is_customer_facing=True,
+                        channel=outreach.get("channel", "email"),
+                        recipient_region=region,
                     )
 
                     if compliance_check["approved"]:

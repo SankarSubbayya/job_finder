@@ -283,5 +283,83 @@ def get_gtm_campaign(campaign_id):
     campaign = searches[campaign_id]
     return jsonify(campaign)
 
+@app.route("/api/compliance/test", methods=["POST"])
+def test_compliance():
+    """Test compliance gate against RED/GREEN examples."""
+    from gtm_agents_kalibr import ComplianceGate
+
+    data = request.json
+    example_type = data.get("example_type", "green")  # green or red
+
+    gate = ComplianceGate()
+    results = {}
+
+    if example_type == "green":
+        # GREEN examples (should PASS)
+        results["G1"] = {
+            "type": "green",
+            "description": "B2B email with AI disclosure, no quantified claims",
+            "message": "I read your CFO Dive article on agent sprawl. We help finance teams get per-agent unit economics. Happy to share a summary if useful.",
+            "verdict": gate.validate_outreach(
+                "I read your CFO Dive article on agent sprawl. We help finance teams get per-agent unit economics. Happy to share a summary if useful.",
+                has_ai_disclosure=True,
+                is_customer_facing=True,
+                channel="email",
+                recipient_region="US"
+            )
+        }
+        results["G2"] = {
+            "type": "green",
+            "description": "LinkedIn message referencing keynote, function-of-product only",
+            "message": "Caught your Manifest 2026 keynote on CBAM. We build compliance-aware outreach tooling. Worth a conversation?",
+            "verdict": gate.validate_outreach(
+                "Caught your Manifest 2026 keynote on CBAM. We build compliance-aware outreach tooling. Worth a conversation?",
+                has_ai_disclosure=True,
+                is_customer_facing=True,
+                channel="email",
+                recipient_region="US"
+            )
+        }
+    else:
+        # RED examples (should BLOCK)
+        results["R1"] = {
+            "type": "red",
+            "description": "SMS blast to Florida + financial product with quantified claim",
+            "message": "Hi, quick note — we're offering fast commercial lending for SMBs. Rates from 6.5%. Reply YES to learn more or STOP to opt out.",
+            "verdict": gate.validate_outreach(
+                "Hi, quick note — we're offering fast commercial lending for SMBs. Rates from 6.5%. Reply YES to learn more or STOP to opt out.",
+                has_ai_disclosure=True,
+                is_customer_facing=True,
+                channel="sms",
+                recipient_region="FL"
+            )
+        }
+        results["R2"] = {
+            "type": "red",
+            "description": "AI cloned voice call to Canada + quantified claim + no disclosure",
+            "message": "We've been helping Canadian 3PLs automate their advance-ruling compliance — it's saving our customers about 30 hours a month per trade lane.",
+            "verdict": gate.validate_outreach(
+                "We've been helping Canadian 3PLs automate their advance-ruling compliance — it's saving our customers about 30 hours a month per trade lane.",
+                has_ai_disclosure=False,
+                is_customer_facing=True,
+                channel="voice",
+                recipient_region="CA"
+            )
+        }
+        results["R3"] = {
+            "type": "red",
+            "description": "Deepfake video to Colorado + quantified claim + no disclosure",
+            "message": "At your company, we know you're facing reconciliation challenges. We cut our monthly close from 14 days to 5 using this product.",
+            "verdict": gate.validate_outreach(
+                "At your company, we know you're facing reconciliation challenges. We cut our monthly close from 14 days to 5 using this product.",
+                has_ai_disclosure=False,
+                is_customer_facing=True,
+                channel="video",
+                recipient_region="CO"
+            )
+        }
+
+    return jsonify({"examples": results, "test_type": example_type})
+
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)

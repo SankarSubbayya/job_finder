@@ -53,6 +53,20 @@
                     <span id="searchBtnText">🚀 Launch Campaign</span>
                     <span id="searchSpinner" class="spinner hidden"></span>
                 </button>
+
+                <!-- Compliance Test Section -->
+                <div class="compliance-test-section">
+                    <h3>Compliance Gate Testing</h3>
+                    <p class="compliance-description">View how the compliance gate blocks high-risk violations:</p>
+                    <div class="compliance-buttons">
+                        <button class="compliance-btn red" onclick="testRedExamples()">
+                            🚫 Test RED Examples (should BLOCK)
+                        </button>
+                        <button class="compliance-btn green" onclick="testGreenExamples()">
+                            ✅ Test GREEN Examples (should PASS)
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- Loading State -->
@@ -227,6 +241,66 @@
             document.getElementById('loadingPanel').classList.add('hidden');
             document.getElementById('resultsPanel').classList.add('hidden');
             document.getElementById('errorPanel').classList.add('hidden');
+        }
+
+        async function testRedExamples() {
+            showComplianceResults(await fetchComplianceTest('red'));
+        }
+
+        async function testGreenExamples() {
+            showComplianceResults(await fetchComplianceTest('green'));
+        }
+
+        async function fetchComplianceTest(exampleType) {
+            try {
+                const response = await fetch('/api/compliance/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ example_type: exampleType })
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('Compliance test error:', error);
+                return null;
+            }
+        }
+
+        function showComplianceResults(data) {
+            if (!data) {
+                alert('Error running compliance test');
+                return;
+            }
+
+            const examples = data.examples || {};
+            const testType = data.test_type;
+            let html = `<h2>${testType === 'red' ? '🚫 RED Examples (HIGH RISK)' : '✅ GREEN Examples (COMPLIANT)'}</h2>`;
+
+            Object.entries(examples).forEach(([key, example]) => {
+                const verdict = example.verdict || {};
+                const isApproved = verdict.approved;
+                const blockers = verdict.blockers || [];
+                const statusColor = isApproved ? '#10b981' : '#ef4444';
+                const statusText = isApproved ? 'APPROVED' : 'BLOCKED';
+
+                html += `
+                    <div style="margin: 20px 0; padding: 20px; background: rgba(255,255,255,0.05); border-left: 4px solid ${statusColor}; border-radius: 8px;">
+                        <h3 style="margin-top: 0; color: ${statusColor};">${key}: ${example.description}</h3>
+                        <p><strong>Message:</strong> <em>"${example.message.substring(0, 80)}..."</em></p>
+                        <p><strong>Verdict:</strong> <span style="color: ${statusColor}; font-weight: bold;">${statusText}</span></p>
+                        ${blockers.length > 0 ? `<p><strong>Blockers:</strong><ul>${blockers.map(b => `<li>${b}</li>`).join('')}</ul></p>` : ''}
+                    </div>
+                `;
+            });
+
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000;';
+            modal.innerHTML = `
+                <div style="background: #1a1a2e; padding: 40px; border-radius: 12px; max-width: 700px; max-height: 80vh; overflow-y: auto; color: #fff; border: 1px solid rgba(255,255,255,0.1);">
+                    ${html}
+                    <button onclick="this.closest('div').parentElement.remove()" style="margin-top: 20px; padding: 10px 20px; background: #0066cc; color: white; border: none; border-radius: 6px; cursor: pointer;">Close</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
         }
 
         document.addEventListener('DOMContentLoaded', () => {

@@ -418,4 +418,67 @@ label {
     .result-score {
         width: 60px;
     }
+
+    .compliance-buttons {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+}
+
+/* Compliance Test Section */
+.compliance-test-section {
+    margin-top: 24px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+.compliance-test-section h3 {
+    margin-top: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.compliance-description {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+
+.compliance-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.compliance-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: 1px solid;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.compliance-btn.red {
+    border-color: var(--accent-danger);
+    color: var(--accent-danger);
+}
+
+.compliance-btn.red:hover {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+.compliance-btn.green {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+}
+
+.compliance-btn.green:hover {
+    background: rgba(16, 185, 129, 0.15);
 }
