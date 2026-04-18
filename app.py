@@ -230,6 +230,7 @@ def gtm_campaign():
     persona = data.get("persona", "CFO")  # CFO, accountant, proprietor
     search_query = data.get("query", "").strip()
     region = data.get("region", "US")
+    channel = data.get("channel", "email")  # email, sms, voice, video
     budget = data.get("budget", 10.0)
 
     if not search_query:
@@ -240,8 +241,8 @@ def gtm_campaign():
     def _run_campaign():
         print(f"\n[GTM] Starting campaign {campaign_id}", flush=True)
         try:
-            print(f"[GTM] Running orchestration: {persona} / {search_query}", flush=True)
-            result = run_gtm_campaign(persona, search_query, region, budget)
+            print(f"[GTM] Running orchestration: {persona} / {search_query} / {channel} / {region}", flush=True)
+            result = run_gtm_campaign(persona, search_query, region, budget, channel)
             print(f"[GTM] Result: status={result.get('status')}, prospects={len(result.get('prospects', []))}", flush=True)
             searches[campaign_id] = {
                 "type": "gtm_campaign",

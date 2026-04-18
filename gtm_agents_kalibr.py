@@ -156,6 +156,7 @@ class KalibrGTMAgent:
         region: str = "US",
         budget_usd: float = 10.0,
         icp_criteria: str = None,
+        channel: str = "email",
     ) -> Dict:
         """
         Execute full GTM pipeline with Kalibr routing and compliance gating.
@@ -163,9 +164,10 @@ class KalibrGTMAgent:
         Args:
             target_persona: CFO, accountant, proprietor
             search_query: What prospects to find
-            region: Geographic region (US, CA, EU)
+            region: Geographic region (US, CA, EU, FL, CO)
             budget_usd: Total budget for Apify queries
             icp_criteria: Ideal customer profile description
+            channel: Communication channel (email, sms, voice, video)
 
         Returns:
             GTM results with compliance audit trail
@@ -407,11 +409,12 @@ Return ONLY valid JSON, no other text."""
                 outreach["prospect_email_hint"] = f"{prospect.get('name').lower().replace(' ', '.')}@{prospect.get('company', '').lower()}.com"
 
                 # Compliance check on generated message (customer-facing, requires AI disclosure)
+                msg_channel = channel if channel else outreach.get("channel", "email")
                 compliance_check = self.compliance_gate.validate_outreach(
                     message=outreach.get("body", ""),
                     has_ai_disclosure=outreach.get("ai_disclosed", False),
                     is_customer_facing=True,
-                    channel=outreach.get("channel", "email"),
+                    channel=msg_channel,
                     recipient_region=region,
                 )
 
@@ -447,11 +450,12 @@ Return ONLY valid JSON, no other text."""
                     }
 
                     # Compliance check on mock message (customer-facing, requires AI disclosure)
+                    msg_channel = channel if channel else outreach.get("channel", "email")
                     compliance_check = self.compliance_gate.validate_outreach(
                         message=outreach.get("body", ""),
                         has_ai_disclosure=outreach.get("ai_disclosed", False),
                         is_customer_facing=True,
-                        channel=outreach.get("channel", "email"),
+                        channel=msg_channel,
                         recipient_region=region,
                     )
 
@@ -489,7 +493,7 @@ gtm_agent = KalibrGTMAgent()
 
 
 def run_gtm_campaign(
-    persona: str, search_query: str, region: str = "US", budget: float = 10.0
+    persona: str, search_query: str, region: str = "US", budget: float = 10.0, channel: str = "email"
 ) -> Dict:
     """Entry point for GTM campaigns."""
     return gtm_agent.execute_gtm_search(
@@ -497,4 +501,5 @@ def run_gtm_campaign(
         search_query=search_query,
         region=region,
         budget_usd=budget,
+        channel=channel,
     )

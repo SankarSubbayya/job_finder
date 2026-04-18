@@ -44,8 +44,20 @@
                     <label for="region">Region</label>
                     <select id="region" class="search-input">
                         <option value="US">United States (TCPA, CAN-SPAM)</option>
+                        <option value="FL">Florida (FTSA - SMS $500/msg)</option>
+                        <option value="CA">Canada (CASL - voice consent)</option>
+                        <option value="CO">Colorado (AI Act - video disclosure)</option>
                         <option value="EU">European Union (GDPR)</option>
-                        <option value="CA">Canada (CASL)</option>
+                    </select>
+                </div>
+
+                <div class="search-input-group">
+                    <label for="channel">Communication Channel</label>
+                    <select id="channel" class="search-input">
+                        <option value="email">Email (standard)</option>
+                        <option value="sms">SMS (requires consent)</option>
+                        <option value="voice">Voice Call (AI disclosure required)</option>
+                        <option value="video">Video (AI disclosure required)</option>
                     </select>
                 </div>
 
@@ -123,6 +135,7 @@
             const persona = document.getElementById('persona').value;
             const query = document.getElementById('query').value.trim();
             const region = document.getElementById('region').value;
+            const channel = document.getElementById('channel').value;
 
             if (!query) {
                 alert('Please enter a search query');
@@ -138,24 +151,26 @@
                 const startResp = await fetch('/api/gtm/campaign', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ persona, query, region, budget: 10.0 })
+                    body: JSON.stringify({ persona, query, region, channel, budget: 10.0 })
                 });
 
                 const startData = await startResp.json();
                 const campaignId = startData.campaign_id;
 
                 let attempts = 0;
-                const maxAttempts = 60;
+                const maxAttempts = 120;  // 2 minute timeout
 
                 while (attempts < maxAttempts) {
                     const resultsResp = await fetch(`/api/gtm/campaign/${campaignId}`);
                     const campaign = await resultsResp.json();
 
-                    if (campaign.status === 'success' && campaign.prospects && campaign.prospects.length > 0) {
-                        displayResults(campaign);
-                        return;
-                    } else if (campaign.status === 'error') {
-                        showError(campaign.error || 'Campaign failed');
+                    // Check for any completed status (success, blocked, or error)
+                    if (campaign.status === 'success' || campaign.status === 'blocked' || campaign.status === 'error') {
+                        if (campaign.status === 'error') {
+                            showError(campaign.error || 'Campaign failed');
+                        } else {
+                            displayResults(campaign);
+                        }
                         return;
                     }
 
@@ -179,8 +194,31 @@
             document.getElementById('resultsPanel').classList.remove('hidden');
             document.getElementById('errorPanel').classList.add('hidden');
 
+            const resultsPanel = document.getElementById('resultsPanel');
             const resultsList = document.getElementById('resultsList');
-            resultsList.innerHTML = '';
+
+            // Check if campaign was blocked for compliance
+            if (campaign.status === 'blocked') {
+                const blockedHTML = `
+                    <div style="padding: 30px; text-align: center; background: rgba(239, 68, 68, 0.1); border: 2px solid #ef4444; border-radius: 8px; margin: 20px 0;">
+                        <h2 style="color: #ef4444; margin-top: 0;">🚫 Campaign BLOCKED</h2>
+                        <p style="font-size: 16px; margin: 15px 0;">This campaign violates compliance regulations.</p>
+                        <p style="font-size: 14px; color: #aaa;">The selected region and communication channel combination is not permitted for outreach.</p>
+                        <div style="margin-top: 20px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 6px; text-align: left;">
+                            <p><strong>Region:</strong> ${campaign.query ? campaign.query : 'N/A'}</p>
+                            <p><strong>Violation:</strong></p>
+                            <ul style="margin: 10px 0; padding-left: 20px;">
+                                <li>SMS requires per-recipient consent (FTSA § 501.059)</li>
+                                <li>Voice requires AI disclosure (FCC 24-17)</li>
+                                <li>Video requires AI interaction disclosure (Colorado AI Act)</li>
+                            </ul>
+                        </div>
+                        <button class="retry-btn" onclick="resetSearch()" style="margin-top: 20px;">← Try Different Region/Channel</button>
+                    </div>
+                `;
+                resultsPanel.innerHTML = '<div class="results-header"><h2 style="color: #ef4444;">🚫 Compliance Violation Detected</h2><button class="back-btn" onclick="resetSearch()">← New Campaign</button></div><div class="results-list">' + blockedHTML + '</div>';
+                return;
+            }
 
             const prospects = campaign.prospects || [];
             const connections = campaign.connections || [];
@@ -244,11 +282,13 @@
         }
 
         async function testRedExamples() {
-            showComplianceResults(await fetchComplianceTest('red'));
+            const data = await fetchComplianceTest('red');
+            if (data) displayComplianceResults(data);
         }
 
         async function testGreenExamples() {
-            showComplianceResults(await fetchComplianceTest('green'));
+            const data = await fetchComplianceTest('green');
+            if (data) displayComplianceResults(data);
         }
 
         async function fetchComplianceTest(exampleType) {
@@ -258,49 +298,55 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ example_type: exampleType })
                 });
-                return await response.json();
+                const data = await response.json();
+                console.log('Compliance test response:', data);
+                return data;
             } catch (error) {
                 console.error('Compliance test error:', error);
+                alert('Error: ' + error.message);
                 return null;
             }
         }
 
-        function showComplianceResults(data) {
-            if (!data) {
-                alert('Error running compliance test');
-                return;
-            }
-
-            const examples = data.examples || {};
+        function displayComplianceResults(data) {
+            const examples = data.examples;
             const testType = data.test_type;
-            let html = `<h2>${testType === 'red' ? '🚫 RED Examples (HIGH RISK)' : '✅ GREEN Examples (COMPLIANT)'}</h2>`;
+            const title = testType === 'red' ? '🚫 RED Examples (HIGH RISK)' : '✅ GREEN Examples (COMPLIANT)';
 
-            Object.entries(examples).forEach(([key, example]) => {
-                const verdict = example.verdict || {};
+            let html = '<h2 style="margin-bottom: 20px;">' + title + '</h2>';
+
+            Object.keys(examples).forEach(key => {
+                const example = examples[key];
+                const verdict = example.verdict;
                 const isApproved = verdict.approved;
-                const blockers = verdict.blockers || [];
+                const blockers = verdict.blockers;
                 const statusColor = isApproved ? '#10b981' : '#ef4444';
                 const statusText = isApproved ? 'APPROVED' : 'BLOCKED';
 
-                html += `
-                    <div style="margin: 20px 0; padding: 20px; background: rgba(255,255,255,0.05); border-left: 4px solid ${statusColor}; border-radius: 8px;">
-                        <h3 style="margin-top: 0; color: ${statusColor};">${key}: ${example.description}</h3>
-                        <p><strong>Message:</strong> <em>"${example.message.substring(0, 80)}..."</em></p>
-                        <p><strong>Verdict:</strong> <span style="color: ${statusColor}; font-weight: bold;">${statusText}</span></p>
-                        ${blockers.length > 0 ? `<p><strong>Blockers:</strong><ul>${blockers.map(b => `<li>${b}</li>`).join('')}</ul></p>` : ''}
-                    </div>
-                `;
+                html += '<div style="margin: 20px 0; padding: 20px; background: rgba(255,255,255,0.05); border-left: 4px solid ' + statusColor + '; border-radius: 8px;">';
+                html += '<h3 style="margin: 0 0 12px 0; color: ' + statusColor + ';">' + key + ': ' + example.description + '</h3>';
+                html += '<p style="margin: 8px 0; font-size: 13px;"><strong>Message:</strong> <em>"' + example.message.substring(0, 70) + '..."</em></p>';
+                html += '<p style="margin: 8px 0; color: ' + statusColor + '; font-weight: bold;">Verdict: ' + statusText + '</p>';
+
+                if (blockers && blockers.length > 0) {
+                    html += '<p style="margin: 8px 0 4px 0;"><strong>Blockers:</strong></p>';
+                    html += '<ul style="margin: 4px 0 0 20px; padding: 0;">';
+                    blockers.forEach(function(b) {
+                        html += '<li style="margin: 4px 0; font-size: 12px;">' + b + '</li>';
+                    });
+                    html += '</ul>';
+                }
+
+                html += '</div>';
             });
 
-            const modal = document.createElement('div');
-            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000;';
-            modal.innerHTML = `
-                <div style="background: #1a1a2e; padding: 40px; border-radius: 12px; max-width: 700px; max-height: 80vh; overflow-y: auto; color: #fff; border: 1px solid rgba(255,255,255,0.1);">
-                    ${html}
-                    <button onclick="this.closest('div').parentElement.remove()" style="margin-top: 20px; padding: 10px 20px; background: #0066cc; color: white; border: none; border-radius: 6px; cursor: pointer;">Close</button>
-                </div>
-            `;
-            document.body.appendChild(modal);
+            document.getElementById('searchPanel').classList.add('hidden');
+            document.getElementById('loadingPanel').classList.add('hidden');
+            document.getElementById('errorPanel').classList.add('hidden');
+
+            const resultsPanel = document.getElementById('resultsPanel');
+            resultsPanel.innerHTML = '<div class="results-header"><h2>' + title + '</h2><button class="back-btn" onclick="resetSearch()">← New Test</button></div><div class="results-list" id="complianceList">' + html + '</div>';
+            resultsPanel.classList.remove('hidden');
         }
 
         document.addEventListener('DOMContentLoaded', () => {
