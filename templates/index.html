@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MarketIntelligence - Lead Discovery Agent</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">MarketIntelligence</h1>
+                <p class="tagline">Discover. Score. Engage.</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Search Panel -->
+            <div class="search-panel" id="searchPanel">
+                <div class="search-input-group">
+                    <label for="query">What prospects are you looking for?</label>
+                    <input
+                        type="text"
+                        id="query"
+                        class="search-input"
+                        placeholder="e.g., B2B SaaS companies in fintech"
+                        value="B2B SaaS companies with 50+ employees"
+                    />
+                </div>
+
+                <div class="icp-input-group">
+                    <label for="icp">Your ICP (optional)</label>
+                    <input
+                        type="text"
+                        id="icp"
+                        class="icp-input"
+                        placeholder="e.g., Series A fintech startups, US-based"
+                    />
+                </div>
+
+                <button class="search-btn" id="searchBtn" onclick="startSearch()">
+                    <span id="searchBtnText">Find Prospects</span>
+                    <span id="searchSpinner" class="spinner hidden"></span>
+                </button>
+            </div>
+
+            <!-- Loading State -->
+            <div class="loading-panel hidden" id="loadingPanel">
+                <div class="progress-section">
+                    <h2>Searching for leads...</h2>
+                    <div class="progress-steps">
+                        <div class="progress-step active">
+                            <div class="step-icon">🔍</div>
+                            <div class="step-label">Scraping prospects</div>
+                        </div>
+                        <div class="progress-step">
+                            <div class="step-icon">📊</div>
+                            <div class="step-label">Enriching data</div>
+                        </div>
+                        <div class="progress-step">
+                            <div class="step-icon">⭐</div>
+                            <div class="step-label">Scoring leads</div>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Panel -->
+            <div class="results-panel hidden" id="resultsPanel">
+                <div class="results-header">
+                    <h2>Qualified Leads</h2>
+                    <button class="back-btn" onclick="resetSearch()">← New Search</button>
+                </div>
+
+                <div class="results-list" id="resultsList"></div>
+            </div>
+
+            <!-- Error Panel -->
+            <div class="error-panel hidden" id="errorPanel">
+                <div class="error-content">
+                    <h2>Something went wrong</h2>
+                    <p id="errorMessage"></p>
+                    <button class="retry-btn" onclick="resetSearch()">Try Again</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>MarketIntelligence • Powered by Apify & Claude AI • Marketing Agents Hackathon 2026</p>
+        </footer>
+    </div>
+
+    <script>
+        async function startSearch() {
+            const query = document.getElementById('query').value.trim();
+            const icp = document.getElementById('icp').value.trim();
+
+            if (!query) {
+                alert('Please enter a search query');
+                return;
+            }
+
+            // Show loading, hide search
+            document.getElementById('searchPanel').classList.add('hidden');
+            document.getElementById('loadingPanel').classList.remove('hidden');
+            document.getElementById('resultsPanel').classList.add('hidden');
+            document.getElementById('errorPanel').classList.add('hidden');
+
+            try {
+                // Start search
+                const startResp = await fetch('/api/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query, icp })
+                });
+
+                const startData = await startResp.json();
+                const searchId = startData.search_id;
+
+                // Poll for results
+                let attempts = 0;
+                const maxAttempts = 60; // 60 * 1 second = up to 1 minute
+
+                while (attempts < maxAttempts) {
+                    const resultsResp = await fetch(`/api/results/${searchId}`);
+                    const resultsData = await resultsResp.json();
+
+                    if (resultsData.status === 'complete') {
+                        displayResults(resultsData.results);
+                        return;
+                    } else if (resultsData.status === 'error') {
+                        showError(resultsData.error);
+                        return;
+                    }
+
+                    // Wait before polling again
+                    await new Promise(r => setTimeout(r, 1000));
+                    attempts++;
+                }
+
+                showError('Search took too long. Please try again.');
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function displayResults(results) {
+            if (!results || results.length === 0) {
+                showError('No prospects found. Try a different search.');
+                return;
+            }
+
+            // Hide loading, show results
+            document.getElementById('loadingPanel').classList.add('hidden');
+            document.getElementById('resultsPanel').classList.remove('hidden');
+            document.getElementById('errorPanel').classList.add('hidden');
+
+            const resultsList = document.getElementById('resultsList');
+            resultsList.innerHTML = '';
+
+            results.forEach((prospect, index) => {
+                const score = prospect.score || 0;
+                const scoreColor = score >= 75 ? '#10b981' : score >= 50 ? '#f59e0b' : '#ef4444';
+
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                card.innerHTML = `
+                    <div class="result-rank">#${index + 1}</div>
+                    <div class="result-content">
+                        <h3 class="result-name">${prospect.name}</h3>
+                        <div class="result-meta">
+                            <span class="meta-item">
+                                <span class="meta-label">Industry:</span>
+                                <span>${prospect.industry || 'N/A'}</span>
+                            </span>
+                            <span class="meta-item">
+                                <span class="meta-label">Size:</span>
+                                <span>${prospect.company_size || 'N/A'}</span>
+                            </span>
+                            <span class="meta-item">
+                                <span class="meta-label">Funding:</span>
+                                <span>${prospect.funding_stage || 'N/A'}</span>
+                            </span>
+                        </div>
+                        <p class="result-reason">💡 ${prospect.score_reason || 'Good prospect fit'}</p>
+                    </div>
+                    <div class="result-score" style="background: ${scoreColor};">
+                        <div class="score-number">${score}</div>
+                        <div class="score-label">Score</div>
+                    </div>
+                </div>
+                `;
+                resultsList.appendChild(card);
+            });
+        }
+
+        function showError(message) {
+            document.getElementById('loadingPanel').classList.add('hidden');
+            document.getElementById('resultsPanel').classList.add('hidden');
+            document.getElementById('errorPanel').classList.remove('hidden');
+            document.getElementById('errorMessage').textContent = message;
+        }
+
+        function resetSearch() {
+            document.getElementById('searchPanel').classList.remove('hidden');
+            document.getElementById('loadingPanel').classList.add('hidden');
+            document.getElementById('resultsPanel').classList.add('hidden');
+            document.getElementById('errorPanel').classList.add('hidden');
+        }
+
+        // Allow Enter key to trigger search
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('query').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') startSearch();
+            });
+        });
+    </script>
+</body>
+</html>
