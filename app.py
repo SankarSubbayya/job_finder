@@ -238,8 +238,11 @@ def gtm_campaign():
     campaign_id = str(uuid.uuid4())
 
     def _run_campaign():
+        print(f"\n[GTM] Starting campaign {campaign_id}", flush=True)
         try:
+            print(f"[GTM] Running orchestration: {persona} / {search_query}", flush=True)
             result = run_gtm_campaign(persona, search_query, region, budget)
+            print(f"[GTM] Result: status={result.get('status')}, prospects={len(result.get('prospects', []))}", flush=True)
             searches[campaign_id] = {
                 "type": "gtm_campaign",
                 "persona": persona,
@@ -252,7 +255,11 @@ def gtm_campaign():
                 "audit_log": result.get("audit_log", []),
                 "created_at": datetime.now().isoformat(),
             }
+            print(f"[GTM] Stored in searches dict", flush=True)
         except Exception as e:
+            print(f"[GTM] Error: {str(e)}", flush=True)
+            import traceback
+            traceback.print_exc()
             searches[campaign_id] = {
                 "type": "gtm_campaign",
                 "status": "error",

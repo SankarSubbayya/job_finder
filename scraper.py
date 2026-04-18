@@ -1,7 +1,10 @@
 import os
 import json
 from typing import List, Dict
+from dotenv import load_dotenv
 from apify_client import ApifyClient
+
+load_dotenv()
 
 def scrape_prospects(query: str, limit: int = 10) -> List[Dict]:
     """
