@@ -124,9 +124,9 @@
                 const startData = await startResp.json();
                 const searchId = startData.search_id;
 
-                // Poll for results
+                // Poll for results (extended timeout for deep reasoning)
                 let attempts = 0;
-                const maxAttempts = 60; // 60 * 1 second = up to 1 minute
+                const maxAttempts = 120; // 120 * 1 second = up to 2 minutes
 
                 while (attempts < maxAttempts) {
                     const resultsResp = await fetch(`/api/results/${searchId}`);
@@ -140,12 +140,20 @@
                         return;
                     }
 
+                    // Update progress message every 10 attempts
+                    if (attempts % 10 === 0) {
+                        const loadingText = document.getElementById('loadingText');
+                        if (loadingText) {
+                            loadingText.innerText = `Searching... (${attempts}s)`;
+                        }
+                    }
+
                     // Wait before polling again
                     await new Promise(r => setTimeout(r, 1000));
                     attempts++;
                 }
 
-                showError('Search took too long. Please try again.');
+                showError('Search is still running. Check back in a moment.');
             } catch (error) {
                 showError(error.message);
             }

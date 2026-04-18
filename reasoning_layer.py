@@ -71,10 +71,9 @@ Respond as JSON:
         # Use extended thinking for deep reasoning
         message = client.messages.create(
             model="claude-opus-4-7",
-            max_tokens=8000,
+            max_tokens=16000,
             thinking={
-                "type": "enabled",
-                "budget_tokens": 5000  # Allow significant reasoning
+                "type": "adaptive"
             },
             messages=[{
                 "role": "user",
