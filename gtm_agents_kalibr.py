@@ -72,7 +72,8 @@ class ComplianceGate:
             "consent_required": rules.get("consent_required", False),
         }
 
-    def validate_outreach(self, message: str, has_ai_disclosure: bool, is_customer_facing: bool = False) -> Dict:
+    def validate_outreach(self, message: str, has_ai_disclosure: bool, is_customer_facing: bool = False,
+                         channel: str = "email", recipient_region: str = "US") -> Dict:
         """Validate outreach message for compliance risks."""
         blockers = []
 
@@ -80,7 +81,7 @@ class ComplianceGate:
         if is_customer_facing and COMPLIANCE_BLOCKERS["no_ai_disclosure"] and not has_ai_disclosure:
             blockers.append("Missing AI disclosure (FTC 16 CFR Part 255)")
 
-        # Check for common false claims
+        # Check for unsubstantiated claims
         false_claim_keywords = [
             "guaranteed",
             "100% success",
@@ -89,6 +90,38 @@ class ComplianceGate:
         ]
         if any(keyword in message.lower() for keyword in false_claim_keywords):
             blockers.append("Potential unsubstantiated claims detected")
+
+        # Check for quantified performance claims (requires substantiation)
+        import re
+        quantified_patterns = [
+            r'\b\d+%\s+(improvement|increase|decrease|reduction)',  # "40% improvement"
+            r'\b\d+\s+(hours|days|weeks|months|saves)',  # "30 hours", "14 days"
+            r'\$\d+',  # "$X savings"
+            r'(saves?|saves?|improve.*rate)',  # "saves X" or "improves rate"
+        ]
+        for pattern in quantified_patterns:
+            if re.search(pattern, message, re.IGNORECASE):
+                blockers.append("Quantified claim detected — requires substantiation record")
+                break
+
+        # Florida SMS rules (FTSA $500/message)
+        if channel.lower() == "sms" and recipient_region.upper() == "FL":
+            blockers.append("SMS to Florida requires per-recipient consent (FTSA § 501.059 = $500/msg)")
+
+        # Voice call rules (TCPA + FCC 24-17)
+        if channel.lower() in ["voice", "ai_voice", "phone"]:
+            if not has_ai_disclosure:
+                blockers.append("AI voice calls require mandatory AI disclosure at call start (FCC 24-17)")
+            if recipient_region.upper() in ["CA", "FL", "TX"]:
+                blockers.append(f"Voice call to {recipient_region} requires verified per-seller consent (TCPA 47 USC § 227)")
+
+        # Cross-border rules
+        if recipient_region.upper() in ["CA", "EU", "UK"] and not has_ai_disclosure:
+            blockers.append(f"Cross-border outreach to {recipient_region} requires consent documentation")
+
+        # Colorado AI Act check (AI-generated content needs disclosure)
+        if recipient_region.upper() == "CO" and channel.lower() in ["video", "ai_video"]:
+            blockers.append("Colorado AI Act § 6-1-1701: AI-generated video requires AI-interaction disclosure")
 
         return {
             "approved": len(blockers) == 0,
