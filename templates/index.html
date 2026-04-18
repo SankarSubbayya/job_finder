@@ -18,31 +18,39 @@
 
         <!-- Main Content -->
         <main class="main">
-            <!-- Search Panel -->
+            <!-- GTM Campaign Panel -->
             <div class="search-panel" id="searchPanel">
                 <div class="search-input-group">
-                    <label for="query">What prospects are you looking for?</label>
+                    <label for="persona">Prospect Persona</label>
+                    <select id="persona" class="search-input">
+                        <option value="CFO">CFO / Financial Officer</option>
+                        <option value="Accountant">Controller / Accountant</option>
+                        <option value="Supply Chain Director">Supply Chain Director</option>
+                    </select>
+                </div>
+
+                <div class="search-input-group">
+                    <label for="query">Search Query</label>
                     <input
                         type="text"
                         id="query"
                         class="search-input"
-                        placeholder="e.g., B2B SaaS companies in fintech"
-                        value="B2B SaaS companies with 50+ employees"
+                        placeholder="e.g., CFOs at fintech companies"
+                        value="CFOs at fintech companies with compliance focus"
                     />
                 </div>
 
-                <div class="icp-input-group">
-                    <label for="icp">Your ICP (optional)</label>
-                    <input
-                        type="text"
-                        id="icp"
-                        class="icp-input"
-                        placeholder="e.g., Series A fintech startups, US-based"
-                    />
+                <div class="search-input-group">
+                    <label for="region">Region</label>
+                    <select id="region" class="search-input">
+                        <option value="US">United States (TCPA, CAN-SPAM)</option>
+                        <option value="EU">European Union (GDPR)</option>
+                        <option value="CA">Canada (CASL)</option>
+                    </select>
                 </div>
 
                 <button class="search-btn" id="searchBtn" onclick="startSearch()">
-                    <span id="searchBtnText">Find Prospects</span>
+                    <span id="searchBtnText">🚀 Launch Campaign</span>
                     <span id="searchSpinner" class="spinner hidden"></span>
                 </button>
             </div>
@@ -50,19 +58,19 @@
             <!-- Loading State -->
             <div class="loading-panel hidden" id="loadingPanel">
                 <div class="progress-section">
-                    <h2>Searching for leads...</h2>
+                    <h2>Running Kalibr GTM Agent...</h2>
                     <div class="progress-steps">
                         <div class="progress-step active">
                             <div class="step-icon">🔍</div>
-                            <div class="step-label">Scraping prospects</div>
+                            <div class="step-label">Discovering prospects</div>
                         </div>
                         <div class="progress-step">
-                            <div class="step-icon">📊</div>
-                            <div class="step-label">Enriching data</div>
+                            <div class="step-icon">✅</div>
+                            <div class="step-label">Compliance check</div>
                         </div>
                         <div class="progress-step">
-                            <div class="step-icon">⭐</div>
-                            <div class="step-label">Scoring leads</div>
+                            <div class="step-icon">📧</div>
+                            <div class="step-label">Generating outreach</div>
                         </div>
                     </div>
                     <div class="progress-bar">
@@ -74,17 +82,16 @@
             <!-- Results Panel -->
             <div class="results-panel hidden" id="resultsPanel">
                 <div class="results-header">
-                    <h2>Qualified Leads</h2>
-                    <button class="back-btn" onclick="resetSearch()">← New Search</button>
+                    <h2>Compliant Prospects</h2>
+                    <button class="back-btn" onclick="resetSearch()">← New Campaign</button>
                 </div>
-
                 <div class="results-list" id="resultsList"></div>
             </div>
 
             <!-- Error Panel -->
             <div class="error-panel hidden" id="errorPanel">
                 <div class="error-content">
-                    <h2>Something went wrong</h2>
+                    <h2>Campaign Error</h2>
                     <p id="errorMessage"></p>
                     <button class="retry-btn" onclick="resetSearch()">Try Again</button>
                 </div>
@@ -99,73 +106,61 @@
 
     <script>
         async function startSearch() {
+            const persona = document.getElementById('persona').value;
             const query = document.getElementById('query').value.trim();
-            const icp = document.getElementById('icp').value.trim();
+            const region = document.getElementById('region').value;
 
             if (!query) {
                 alert('Please enter a search query');
                 return;
             }
 
-            // Show loading, hide search
             document.getElementById('searchPanel').classList.add('hidden');
             document.getElementById('loadingPanel').classList.remove('hidden');
             document.getElementById('resultsPanel').classList.add('hidden');
             document.getElementById('errorPanel').classList.add('hidden');
 
             try {
-                // Start search
-                const startResp = await fetch('/api/search', {
+                const startResp = await fetch('/api/gtm/campaign', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ query, icp })
+                    body: JSON.stringify({ persona, query, region, budget: 10.0 })
                 });
 
                 const startData = await startResp.json();
-                const searchId = startData.search_id;
+                const campaignId = startData.campaign_id;
 
-                // Poll for results (extended timeout for deep reasoning)
                 let attempts = 0;
-                const maxAttempts = 120; // 120 * 1 second = up to 2 minutes
+                const maxAttempts = 60;
 
                 while (attempts < maxAttempts) {
-                    const resultsResp = await fetch(`/api/results/${searchId}`);
-                    const resultsData = await resultsResp.json();
+                    const resultsResp = await fetch(`/api/gtm/campaign/${campaignId}`);
+                    const campaign = await resultsResp.json();
 
-                    if (resultsData.status === 'complete') {
-                        displayResults(resultsData.results);
+                    if (campaign.status === 'success' && campaign.prospects && campaign.prospects.length > 0) {
+                        displayResults(campaign);
                         return;
-                    } else if (resultsData.status === 'error') {
-                        showError(resultsData.error);
+                    } else if (campaign.status === 'error') {
+                        showError(campaign.error || 'Campaign failed');
                         return;
                     }
 
-                    // Update progress message every 10 attempts
-                    if (attempts % 10 === 0) {
-                        const loadingText = document.getElementById('loadingText');
-                        if (loadingText) {
-                            loadingText.innerText = `Searching... (${attempts}s)`;
-                        }
+                    const loadingText = document.querySelector('.progress-section h2');
+                    if (loadingText) {
+                        loadingText.innerText = `Running Kalibr GTM Agent... (${attempts}s)`;
                     }
 
-                    // Wait before polling again
                     await new Promise(r => setTimeout(r, 1000));
                     attempts++;
                 }
 
-                showError('Search is still running. Check back in a moment.');
+                showError('Campaign still running. Try again in a moment.');
             } catch (error) {
-                showError(error.message);
+                showError('Error: ' + error.message);
             }
         }
 
-        function displayResults(results) {
-            if (!results || results.length === 0) {
-                showError('No prospects found. Try a different search.');
-                return;
-            }
-
-            // Hide loading, show results
+        function displayResults(campaign) {
             document.getElementById('loadingPanel').classList.add('hidden');
             document.getElementById('resultsPanel').classList.remove('hidden');
             document.getElementById('errorPanel').classList.add('hidden');
@@ -173,40 +168,51 @@
             const resultsList = document.getElementById('resultsList');
             resultsList.innerHTML = '';
 
-            results.forEach((prospect, index) => {
-                const score = prospect.score || 0;
-                const scoreColor = score >= 75 ? '#10b981' : score >= 50 ? '#f59e0b' : '#ef4444';
+            const prospects = campaign.prospects || [];
+            const connections = campaign.connections || [];
 
+            if (prospects.length === 0) {
+                showError('No compliant prospects found.');
+                return;
+            }
+
+            prospects.forEach((prospect, index) => {
+                const connection = connections.find(c => c.prospect_name === prospect.name);
                 const card = document.createElement('div');
                 card.className = 'result-card';
                 card.innerHTML = `
                     <div class="result-rank">#${index + 1}</div>
                     <div class="result-content">
-                        <h3 class="result-name">${prospect.name}</h3>
+                        <h3 class="result-name">${prospect.name || 'Unknown'}</h3>
                         <div class="result-meta">
                             <span class="meta-item">
-                                <span class="meta-label">Industry:</span>
-                                <span>${prospect.industry || 'N/A'}</span>
+                                <span class="meta-label">Research:</span>
+                                <span>${prospect.research_summary ? prospect.research_summary.substring(0, 50) + '...' : 'Analyzed'}</span>
                             </span>
-                            <span class="meta-item">
-                                <span class="meta-label">Size:</span>
-                                <span>${prospect.company_size || 'N/A'}</span>
-                            </span>
-                            <span class="meta-item">
-                                <span class="meta-label">Funding:</span>
-                                <span>${prospect.funding_stage || 'N/A'}</span>
-                            </span>
+                            ${connection ? `<span class="meta-item"><span class="meta-label">Subject:</span><span>${connection.subject.substring(0, 35)}...</span></span>` : ''}
                         </div>
-                        <p class="result-reason">💡 ${prospect.score_reason || 'Good prospect fit'}</p>
+                        <p class="result-reason">✅ Compliance Approved ${connection?.ai_disclosed ? '| 🤖 AI Disclosed' : ''}</p>
                     </div>
-                    <div class="result-score" style="background: ${scoreColor};">
-                        <div class="score-number">${score}</div>
-                        <div class="score-label">Score</div>
+                    <div class="result-score" style="background: #10b981;">
+                        <div class="score-number">PASS</div>
+                        <div class="score-label">Compliant</div>
                     </div>
-                </div>
                 `;
                 resultsList.appendChild(card);
             });
+
+            const governance = campaign.governance || {};
+            const metrics = governance.pipeline_metrics || {};
+            const costSummary = governance.cost_summary || {};
+
+            const metricsDiv = document.createElement('div');
+            metricsDiv.style.cssText = 'margin-top: 20px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);';
+            metricsDiv.innerHTML = `
+                <h3 style="margin-top: 0;">📊 Governance Metrics</h3>
+                <p>📍 Discovery: ${(metrics.discovery_rate * 100).toFixed(0)}% | ✅ Compliance: ${(metrics.compliance_rate * 100).toFixed(0)}% | 📧 Outreach: ${(metrics.outreach_rate * 100).toFixed(0)}%</p>
+                <p style="font-size: 0.9em; color: #aaa;">💰 Cost: $${costSummary.total_spent?.toFixed(2) || '0.00'} | Connected: ${connections.length}/${prospects.length}</p>
+            `;
+            resultsList.appendChild(metricsDiv);
         }
 
         function showError(message) {
@@ -223,7 +229,6 @@
             document.getElementById('errorPanel').classList.add('hidden');
         }
 
-        // Allow Enter key to trigger search
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('query').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') startSearch();
